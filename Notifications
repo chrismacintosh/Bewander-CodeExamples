@@ -1,0 +1,88 @@
+//Added to the part of the account controller that has a POST request made when a user clicks on the email verification link after registration.
+//This adds a new notification to the database with the necessary info for displaying the notification.
+
+//Here's code to add a notification to the DB...
+                string message = "A new user has joined bewander. Would you like to connect with them?(" + userId;
+                List<User> results = new List<User>();
+                results = db.Users.ToList();
+                foreach (User User in results)
+                {
+                    Notifications notification = new Notifications(2, message, User.UserID);
+                    db.Notifications.Add(notification);
+                    db.SaveChanges();
+                }
+                return RedirectToAction("CreateProfile", "Users");
+               
+//Add this to the context for the database so a Notifications table is tracked
+public DbSet<Notifications> Notifications { get; set; }
+
+//Necessary DB migrations
+namespace Bewander.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class Notifications : DbMigration
+    {
+        public override void Up()
+        {
+            CreateTable(
+                "dbo.Notifications",
+                c => new
+                    {
+                        MessageID = c.Int(nullable: false, identity: true),
+                        MessageType = c.Int(nullable: false),
+                        Content = c.String(),
+                        UserID = c.String(),
+                        DateTime = c.DateTime(nullable: false),
+                    })
+                .PrimaryKey(t => t.MessageID);
+            
+        }
+        
+        public override void Down()
+        {
+            DropTable("dbo.Notifications");
+        }
+    }
+}
+
+//Add a Notifications model
+
+namespace Bewander.Models
+{
+    [Table("Notifications")]
+    public class Notifications
+    {
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public int MessageID { get; set; }
+        //Use this to flag different message types. 0 = Webmaster Notification, 1 = Administrator Notification, 2 = New User Notification
+        public int MessageType { get; set; }
+        //Content. We can parse things from the content if needed.
+        public string Content { get; set; }
+        //Target UserID FOR the notification.
+        public string UserID { get; set; }
+        //Datetime of the notification.
+        public DateTime DateTime { get; set; }
+        
+        public Notifications() { }
+        public Notifications(int messagetype, string content, string userID)
+        {
+            MessageType = messagetype;
+            Content = content;
+            UserID = userID;
+            DateTime = DateTime.Now;
+        }
+    }
+}
+
+//This goes in the Razor View where the Notification will be displayed (Navbar in this case)
+
+              <div class="notifications">
+                    @foreach (var item in Model)
+                    {
+                        <span class="notification-list-item"><a href="/Users/ProfilePage?userID=@item.data">@item.Content</a></span>
+                        
+                    }
+              </div>
