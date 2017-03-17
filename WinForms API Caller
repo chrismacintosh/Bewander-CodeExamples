@@ -1,0 +1,83 @@
+//This is a small excerpt showing how I used the Web API 2 to load information into a windows form application.
+
+public async void updateLatestReview()
+        {
+            try
+            {
+                HttpClient client = new HttpClient();
+                HttpResponseMessage response = await client.GetAsync("http://bewander.com/api/ReviewAPI/newestreview");
+                List<string> errors = new List<string>();
+
+                
+                response.EnsureSuccessStatusCode(); //This may or may not be irrelevant, since if the request fails the catch block will occur.
+                string responseStr =  response.Content.ReadAsStringAsync().Result;
+                //This is 100% necessary due to how IHTTPActionResult returns our HttpResponseMessage with extra's
+                
+                responseStr = responseStr
+                                             .Replace("\\", "")
+                                               .Trim(new char[1] { '"' });
+                
+                ReviewAPIViewModel result = new ReviewAPIViewModel();
+                result = JsonConvert.DeserializeObject<ReviewAPIViewModel>(responseStr, new JsonSerializerSettings
+                {
+                    Error = delegate (object sender, Newtonsoft.Json.Serialization.ErrorEventArgs args)
+                    {
+                        //eror handling... because stuff happens!
+                        errors.Add(args.ErrorContext.Error.Message);
+                        args.ErrorContext.Handled = true;
+                    },
+                    Converters = { new Newtonsoft.Json.Converters.IsoDateTimeConverter() }
+                });
+
+                ReviewLabelDatePosted.Text = result.DatePosted;
+                ReviewLabelLocation.Text = result.PlaceName;
+                ReviewLabelUserFullName.Text = result.UsersFullName;
+                ReviewLabelCost.Text = result.CostRating.ToString();
+                ReviewLabelBody.Text = result.Body.ToString();
+                ReviewLabelTitle.Text = result.Title.ToString();
+                ReviewLabelHyperlink.Tag = result.Website.ToString();
+
+                //Set hyperlink to unviewed
+                ReviewLabelHyperlink.LinkVisited = false;
+
+                //userimage.Image = new Bitmap(result.profilepic);
+
+                result.StarRating = result.StarRating / 2; //Stars are actually 0-10... Did NOT even notice that when I wrote this.
+                //This is fun. I need to learn a more efficient way to do this...
+                if(result.StarRating == 1)
+                {
+                    var image = new Bitmap(Properties.Resources.goldstar_1);
+                    ReviewLabelStars.Image = image;
+                }
+                else if(result.StarRating == 2)
+                {
+                    var image = new Bitmap(Properties.Resources.goldstar_2);
+                    ReviewLabelStars.Image = image;
+                }
+                else if(result.StarRating == 3)
+                {
+                    var image = new Bitmap(Properties.Resources.goldstar_3);
+                    ReviewLabelStars.Image = image;
+                }
+                else if(result.StarRating == 4)
+                {
+                    var image = new Bitmap(Properties.Resources.goldstar_4);
+                    ReviewLabelStars.Image = image;
+                }
+                else if(result.StarRating == 5)
+                {
+                    var image = new Bitmap(Properties.Resources.goldstar_5);
+                    ReviewLabelStars.Image = image;
+                }
+            }
+            //This exception will occur if line 51 fails (if the server cannot be contacted).
+            //Instead of crashing the app, just display in the status bar what happened.
+            catch (HttpRequestException e)
+            {
+                toolStripStatusLabel.Text = "Failed to contact Bewander server.";
+            }
+            finally
+            {
+               //Add image behavior here later
+            }
+        }
