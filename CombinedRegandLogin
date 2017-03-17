@@ -1,0 +1,135 @@
+//Here's how you can combine a registration and login page (or two ViewModels in general, if they need to be displayed on the same page).
+
+//In the viewmodel:
+
+public class CombinedLRViewModel
+    {
+        public RegisterViewModel RegisterViewModel { get; set; }
+        public LoginViewModel LoginViewModel { get; set; }
+    }
+    
+//This creates a ViewModel that utilizes other view models. You can reference each viewmodel individually by using "CombinedLRViewModel.(RegisterViewModel.Property or LoginViewModel.Property)" where Property is a property of the viewmodel you're trying to access..
+
+//As an example:
+
+//In Razor view for Login Page:
+
+//Change:
+@model LoginViewModel
+//To:
+@model CombinedLRViewModel
+
+//Change ALL model.property references to model.submodel.property
+//Example:
+@Html.LabelFor(m => m.Email, new { @class = "col-md-3 control-label" })
+                            <div>
+                                @Html.TextBoxFor(m => m.Email, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Email, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.Password, new { @class = "col-md-3 control-label" })
+                            <div>
+                                @Html.PasswordFor(m => m.Password, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.Password, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-0 col-md-8">
+                                    <div class="checkbox" id="rememberBox">
+                                        @Html.CheckBoxFor(m => m.RememberMe)
+                                        @Html.LabelFor(m => m.RememberMe)
+                                        
+ 
+//So all these "m.xxxxxxxxx" get changed to:
+                            @Html.LabelFor(m => m.LoginViewModel.Email, new { @class = "col-md-3 control-label" })
+                            <div>
+                                @Html.TextBoxFor(m => m.LoginViewModel.Email, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.LoginViewModel.Email, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.LoginViewModel.Password, new { @class = "col-md-3 control-label" })
+                            <div>
+                                @Html.PasswordFor(m => m.LoginViewModel.Password, new { @class = "form-control" })
+                                @Html.ValidationMessageFor(m => m.LoginViewModel.Password, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-0 col-md-8">
+                                    <div class="checkbox" id="rememberBox">
+                                        @Html.CheckBoxFor(m => m.LoginViewModel.RememberMe)
+                                        @Html.LabelFor(m => m.LoginViewModel.RememberMe)
+                                        
+   //You can then add the RegisterViewModel
+    <div id="innerContainerReg">
+        @using (Html.BeginForm("Register", "Account", FormMethod.Post,
+                                new { @class = "form-horizontal col-md-6 w-100", role = "form", style = "padding:0px;", @id = "register-form" }))
+        {
+            @Html.AntiForgeryToken()
+            <h4>Create a new account.</h4>
+            <hr />
+     <!-- PlaceID (hidden) -->
+            @Html.HiddenFor(model => model.RegisterViewModel.PlaceID)
+    <!-- PlaceName (hidden)-->
+            @Html.HiddenFor(model => model.RegisterViewModel.PlaceName)
+    <!-- Lat (hidden) -->
+            @Html.HiddenFor(model => model.RegisterViewModel.Lat)
+    <!-- Lng (hidden)-->
+            @Html.HiddenFor(model => model.RegisterViewModel.Lng)
+            @Html.ValidationSummary("", new { @class = "text-danger" })
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.Email, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.TextBoxFor(m => m.RegisterViewModel.Email, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.Password, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.PasswordFor(m => m.RegisterViewModel.Password, new { @class = "form-control" })
+                </div>
+                <div class="col-md-9 col-md-offset-3">
+                    <p id="password-info">Must have at least 6 characters, an uppercase, <br />number and special character (e.g., 'Pass1!')</p>
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.ConfirmPassword, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.PasswordFor(m => m.RegisterViewModel.ConfirmPassword, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.FirstName, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.TextBoxFor(m => m.RegisterViewModel.FirstName, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.LastName, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.TextBoxFor(m => m.RegisterViewModel.LastName, new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.PlaceID, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.Editor("Search", new { htmlAttributes = new { @class = "form-control", id = "autocomplete", onFocus = "geolocate()", type = "text" } })
+                </div>
+            </div>
+            <div class="form-group">
+                @Html.LabelFor(m => m.RegisterViewModel.DOB, new { @class = "col-md-3 control-label" })
+                <div class="col-md-9">
+                    @Html.EditorFor(m => m.RegisterViewModel.DOB, new { htmlAttributes = new { @class = "form-control" } })
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-offset-3 col-md-9">
+                    <!--<input type="submit" class="btn btn-default" value="Register" id="register" disabled />-->
+                    <a role="button" id="validate-register-form" class="btn btn-default" style="margin-top:10px">Register</a>
+                </div>
+            </div>
+            @Html.Partial("_PolicyModalPartial")
+        <!--<img src="~/Images/Home/BigSur-USA.png" class="img-responsive col-md-6 pull-right" id="registerImg" style="padding:0px;" alt="Big Sur">-->
+        }
+    </div><!--registerForm-->
